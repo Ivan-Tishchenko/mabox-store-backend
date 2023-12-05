@@ -1,0 +1,90 @@
+import { Response, NextFunction } from "express";
+import { RequestType } from "types/Request.type";
+import { User } from "../models/user";
+
+const updateUser = async (
+  req: RequestType,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const {
+      email,
+      name,
+      phone,
+      birthday,
+      telegram,
+    } = req.body;
+
+    const avatarURL = req.file?.path;
+
+    const updateData = {
+      email: req.user.email,
+      name: req.user.name,
+      avatarURL: req.user.avatarURL,
+      phone: req.user.phone,
+      birthday: req.user.birthday,
+      updatedAt: req.user.updatedAt,
+      telegram: req.user.telegram,
+    };
+
+    let isUpdateNeed = false;
+
+    if (!!email && email !== req.user.email) {
+      const userWithThisEmail = await User.findOne({
+        email,
+      });
+
+      if (userWithThisEmail) {
+        res.status(409).json({ message: "email in use" });
+        return;
+      }
+      updateData.email = email;
+      isUpdateNeed = true;
+    }
+    if (!!name && name !== req.user.name) {
+      updateData.name = name;
+      isUpdateNeed = true;
+    }
+    if (avatarURL) {
+      updateData.avatarURL = avatarURL;
+      isUpdateNeed = true;
+    }
+    if (!!phone && phone !== req.user.phone) {
+      updateData.phone = phone;
+      isUpdateNeed = true;
+    }
+    if (!!birthday && birthday !== req.user.birthday) {
+      updateData.birthday = birthday;
+      isUpdateNeed = true;
+    }
+    if (!!telegram && telegram !== req.user.telegram) {
+      updateData.telegram = telegram;
+      isUpdateNeed = true;
+    }
+
+    const currentDate = new Date();
+    const formattedDate = currentDate.toISOString();
+
+    updateData.updatedAt = formattedDate;
+
+    if (!isUpdateNeed) {
+      res.status(201).json({ ...updateData });
+      return;
+    }
+
+    await User.findOneAndUpdate(
+      { _id: req.user._id },
+      updateData
+    );
+
+    res.status(201).json({
+      ...updateData,
+    });
+  } catch (error) {
+    console.error("Error creating user", error);
+    res.status(error.status).json(error.message);
+  }
+};
+
+export default updateUser;

@@ -9,9 +9,8 @@ import cors from "cors";
 require("dotenv").config();
 
 import authRouter from "./routes/api/auth";
-// import TasksRouter from "./routes/api/tasks";
 // import reviewsRouter from "./routes/api/reviews";
-// import userRouter from "./routes/api/users";
+import userRouter from "./routes/api/users";
 
 const app = express();
 
@@ -23,9 +22,8 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static("public"));
 
-// app.use("/api/tasks", TasksRouter);
 app.use("/api/auth", authRouter);
-// app.use("/api/users", userRouter);
+app.use("/api/users", userRouter);
 // app.use("/api/reviews", reviewsRouter);
 
 app.use((req: Request, res: Response) => {
